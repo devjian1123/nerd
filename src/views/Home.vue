@@ -1,21 +1,76 @@
 <script setup>
 import TableBox from '@/components/TableBox.vue';
 import { useTableStore } from '@/stores/useTableStore';
+import { ref } from 'vue';
 
 const { tables, addTable, removeTable } = useTableStore();
+const isSidebarOpen = ref(true);
 </script>
 
 <template>
-  <div class="p-6">
-    <button @click="addTable" class="mb-4 bg-blue-500 text-white px-3 py-1 rounded">
-      + 테이블 추가
-    </button>
+  <div class="flex h-screen">
+    <!-- 왼쪽 사이드바 -->
+    <aside
+      :class="[
+        'h-full overflow-hidden border-r border-gray-300 bg-white transition-all duration-300 ease-in-out',
+        isSidebarOpen ? 'w-64 p-4' : 'w-0 p-0',
+      ]"
+    >
+      <div v-if="isSidebarOpen">
+        <h2 class="mb-4 text-xl font-bold">메뉴</h2>
+        <button @click="addTable" class="mb-2 w-full rounded bg-blue-500 px-4 py-2 text-white">
+          + 테이블 추가
+        </button>
+        <ul class="text-sm text-gray-700">
+          <li v-for="table in tables" :key="table.id" class="py-1">
+            • {{ table.name || '이름 없음' }}
+          </li>
+        </ul>
+      </div>
+    </aside>
 
-    <TableBox
-      v-for="table in tables"
-      :key="table.id"
-      :table="table"
-      :onDelete="() => removeTable(table.id)"
-    />
+    <!-- 오른쪽 메인 캔버스 -->
+    <main class="relative flex-1 overflow-auto bg-gray-100">
+      <!-- 상단 헤더 -->
+      <header
+        class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-300 bg-white px-6 py-3 shadow"
+      >
+        <div class="flex items-center gap-3">
+          <button @click="isSidebarOpen = !isSidebarOpen" class="text-gray-500 hover:text-black">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                v-if="isSidebarOpen"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+              <path v-else stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <h1 class="text-2xl font-semibold">ERDoc 작업 화면</h1>
+        </div>
+      </header>
+
+      <!-- 테이블 캔버스 -->
+      <div class="relative h-[1200px]">
+        <div
+          v-for="table in tables"
+          :key="table.id"
+          class="absolute"
+          :style="{ left: table.x + 'px', top: table.y + 'px' }"
+        >
+          <TableBox :table="table" />
+        </div>
+      </div>
+    </main>
   </div>
 </template>
+
+<style scoped></style>

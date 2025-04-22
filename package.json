@@ -19,7 +19,8 @@
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-vue": "^10.0.0",
     "postcss": "^8.5.3",
-    "prettier": "3.5.3",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.1.4",
     "vite": "^6.3.1"
   }
