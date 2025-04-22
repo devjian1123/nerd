@@ -28,6 +28,8 @@ export const useTableStore = () => {
     tables.value.push({
       id: `table_${Date.now()}`,
       name: '',
+      x: 0,
+      y: 0,
       columns: [],
     });
   };

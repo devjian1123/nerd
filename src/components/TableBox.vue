@@ -3,13 +3,38 @@ const props = defineProps({
   table: Object,
 });
 
+const emit = defineEmits(['drag']);
+
 const addColumn = () => {
   props.table.columns.push({ name: '', type: '', description: '' });
 };
 
+let startX = 0;
+let startY = 0;
+let dragging = false;
+
 const startDrag = (event) => {
-  // 추후 드래그 동작 구현을 위해 좌표 저장 or emit 예정
-  console.log('드래그 시작', event.clientX, event.clientY);
+  startX = event.clientX;
+  startY = event.clientY;
+  dragging = true;
+
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', endDrag);
+};
+
+const onDrag = (event) => {
+  if (!dragging) return;
+  const deltaX = event.clientX - startX;
+  const deltaY = event.clientY - startY;
+  startX = event.clientX;
+  startY = event.clientY;
+  emit('drag', deltaX, deltaY);
+};
+
+const endDrag = () => {
+  dragging = false;
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('mouseup', endDrag);
 };
 </script>
 
