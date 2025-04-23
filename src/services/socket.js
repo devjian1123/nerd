@@ -3,7 +3,7 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
 const client = new Client({
-  webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+  webSocketFactory: () => new SockJS('https://nerd-backend-production.up.railway.app/ws'),
   reconnectDelay: 5000,
   onConnect: () => {
     console.log('🔗 WebSocket connected');
