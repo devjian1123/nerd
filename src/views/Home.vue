@@ -1,10 +1,21 @@
 <script setup>
 import TableBox from '@/components/TableBox.vue';
+import { connectWebSocket, sendPosition } from '@/services/socket';
 import { useTableStore } from '@/stores/useTableStore';
-import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { onMounted, ref } from 'vue';
 
-const { tables, addTable, removeTable } = useTableStore();
+// Pinia 스토어 인스턴스 가져오기
+const tableStore = useTableStore();
+
+// storeToRefs를 사용해 tables를 반응형으로 구조분해
+const { tables } = storeToRefs(tableStore);
+const { addTable, removeTable } = tableStore;
 const isSidebarOpen = ref(false);
+
+onMounted(() => {
+  connectWebSocket();
+});
 
 const handleDrag = (table, deltaX, deltaY) => {
   table.x += deltaX;
@@ -87,7 +98,11 @@ const handleDrag = (table, deltaX, deltaY) => {
           class="absolute"
           :style="{ left: table.x + 'px', top: table.y + 'px' }"
         >
-          <TableBox :table="table" @drag="(dx, dy) => handleDrag(table, dx, dy)" />
+          <TableBox
+            :table="table"
+            @drag="(dx, dy) => handleDrag(table, dx, dy)"
+            @dragEnd="() => sendPosition(table.x, table.y, table.id)"
+          />
         </div>
       </div>
     </main>

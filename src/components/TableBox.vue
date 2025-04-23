@@ -3,7 +3,7 @@ const props = defineProps({
   table: Object,
 });
 
-const emit = defineEmits(['drag']);
+const emit = defineEmits(['drag', 'dragEnd']);
 
 const addColumn = () => {
   props.table.columns.push({ name: '', type: '', description: '' });
@@ -35,6 +35,7 @@ const endDrag = () => {
   dragging = false;
   document.removeEventListener('mousemove', onDrag);
   document.removeEventListener('mouseup', endDrag);
+  emit('dragEnd');
 };
 </script>
 
