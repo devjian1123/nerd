@@ -2,30 +2,61 @@ import { useTableStore } from '@/stores/useTableStore';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
+const socketUrl = import.meta.env.VITE_SOCKET_URL;
+
 const client = new Client({
-  webSocketFactory: () => new SockJS('https://nerd-backend-production.up.railway.app/ws'),
+  webSocketFactory: () => new SockJS(socketUrl),
   reconnectDelay: 5000,
-  onConnect: () => {
+});
+
+export function connectWebSocket(projectId) {
+  client.onConnect = () => {
     console.log('🔗 WebSocket connected');
 
-    client.subscribe('/topic/position', (message) => {
+    const store = useTableStore();
+
+    client.subscribe(`/topic/projects/${projectId}/position`, (message) => {
       const data = JSON.parse(message.body);
       console.log('📦 Position update received:', data);
 
-      // 위치 업데이트 → 전역 상태 관리 or emit 등으로 연결
-      const store = useTableStore();
       store.updateTablePosition(data);
     });
-  },
-});
 
-export function connectWebSocket() {
+    client.subscribe(`/topic/projects/${projectId}/column/update`, (message) => {
+      const data = JSON.parse(message.body);
+      console.log('📦 Column update received:', data);
+
+      store.updateColumnField(data);
+    });
+
+    client.subscribe(`/topic/projects/${projectId}/column/add`, (message) => {
+      const data = JSON.parse(message.body);
+      console.log('📦 Column add received:', data);
+      const store = useTableStore();
+      store.addColumnToTable(data);
+    });
+  };
+
   if (!client.active) client.activate();
 }
 
-export function sendPosition(x, y, tableId) {
+export function sendPosition(x, y, projectId, tableId) {
   client.publish({
-    destination: '/app/move',
+    destination: `/app/projects/${projectId}/move`,
     body: JSON.stringify({ x, y, tableId }),
+  });
+}
+
+export function sendColumnUpdate({ projectId, tableId, columnId, field, value }) {
+  client.publish({
+    destination: `/app/projects/${projectId}/column/update`,
+    body: JSON.stringify({ tableId, columnId, field, value }),
+  });
+}
+
+export function sendColumnAdd({ projectId, tableId, column }) {
+  client.publish({
+    destination: `/app/projects/${projectId}/column/add`,
+    body: JSON.stringify({ tableId, column }),
   });
 }

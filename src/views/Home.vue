@@ -1,9 +1,11 @@
 <script setup>
 import TableBox from '@/components/TableBox.vue';
-import { connectWebSocket, sendPosition } from '@/services/socket';
+import { connectWebSocket, sendColumnAdd, sendColumnUpdate, sendPosition } from '@/services/socket';
 import { useTableStore } from '@/stores/useTableStore';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref } from 'vue';
+
+const projectId = 'DemoProject';
 
 // Pinia 스토어 인스턴스 가져오기
 const tableStore = useTableStore();
@@ -14,13 +16,35 @@ const { addTable, removeTable } = tableStore;
 const isSidebarOpen = ref(false);
 
 onMounted(() => {
-  connectWebSocket();
+  connectWebSocket(projectId);
 });
 
-const handleDrag = (table, deltaX, deltaY) => {
+function handleDrag(table, deltaX, deltaY) {
   table.x += deltaX;
   table.y += deltaY;
-};
+}
+
+function handleDragEnd(table) {
+  sendPosition(table.x, table.y, projectId, table.id);
+}
+
+function handleColumnUpdate(table, payload) {
+  sendColumnUpdate({
+    projectId,
+    tableId: table.id,
+    columnId: payload.columnId,
+    field: payload.field,
+    value: payload.value,
+  });
+}
+
+function handleColumnAdd(table, payload) {
+  sendColumnAdd({
+    projectId,
+    tableId: table.id,
+    column: payload.column,
+  });
+}
 </script>
 
 <template>
@@ -86,7 +110,7 @@ const handleDrag = (table, deltaX, deltaY) => {
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
-          <h1 class="text-2xl font-semibold">ERDoc 작업 화면</h1>
+          <h1 class="text-2xl font-semibold">{{ projectId }}</h1>
         </div>
       </header>
 
@@ -101,7 +125,9 @@ const handleDrag = (table, deltaX, deltaY) => {
           <TableBox
             :table="table"
             @drag="(dx, dy) => handleDrag(table, dx, dy)"
-            @dragEnd="() => sendPosition(table.x, table.y, table.id)"
+            @dragEnd="() => handleDragEnd(table)"
+            @columnUpdate="(payload) => handleColumnUpdate(table, payload)"
+            @columnAdd="(payload) => handleColumnAdd(table, payload)"
           />
         </div>
       </div>

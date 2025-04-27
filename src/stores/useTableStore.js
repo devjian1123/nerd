@@ -9,8 +9,8 @@ export const useTableStore = defineStore('table', {
         x: 100,
         y: 150,
         columns: [
-          { name: 'id', type: 'INT', description: 'primary key' },
-          { name: 'email', type: 'VARCHAR(255)', description: 'user email' },
+          { id: 'col1', name: 'id', type: 'INT', description: 'primary key' },
+          { id: 'col2', name: 'email', type: 'VARCHAR(255)', description: 'user email' },
         ],
       },
       {
@@ -19,8 +19,8 @@ export const useTableStore = defineStore('table', {
         x: 400,
         y: 300,
         columns: [
-          { name: 'id', type: 'INT', description: 'primary key' },
-          { name: 'title', type: 'VARCHAR(255)', description: 'post title' },
+          { id: 'col3', name: 'id', type: 'INT', description: 'primary key' },
+          { id: 'col4', name: 'title', type: 'VARCHAR(255)', description: 'post title' },
         ],
       },
     ],
@@ -44,6 +44,21 @@ export const useTableStore = defineStore('table', {
         table.x = x;
         table.y = y;
       }
+    },
+    updateColumnField({ tableId, columnId, field, value }) {
+      const table = this.tables.find((t) => t.id === tableId);
+      if (!table) return;
+
+      const column = table.columns.find((c) => c.id === columnId);
+      if (!column) return;
+
+      column[field] = value;
+    },
+    addColumnToTable({ tableId, column }) {
+      const table = this.tables.find((t) => t.id === tableId);
+      if (!table) return;
+
+      table.columns.push(column);
     },
   },
 });
